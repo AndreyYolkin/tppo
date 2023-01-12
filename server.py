@@ -3,9 +3,10 @@ import socket
 import threading
 from state import RelayState
 from storage import Storage
+from logger import Logger
 
 class RelayServer:
-    def __init__(self, host, port, filename):
+    def __init__(self, host, port, filename, logging_level):
         self.host = host
         self.port = port
         self.subscribers = set()
@@ -13,6 +14,8 @@ class RelayServer:
         self.sock.bind((self.host, self.port))
         self.lock = threading.Lock()
         self.init_state(filename)
+        self.logger = Logger(__name__, logging_level)
+        self.logger.add_file_handler('logs/server.log')
 
     # Wrapper for response
     def respond_to(self, type, payload, address):
@@ -59,6 +62,7 @@ class RelayServer:
         try:
             self.subscribers.remove(subscriber)
         except KeyError:
+            self.logger.warning(f"we can't unusbscribe if client is not subscribed {subscriber}")
             self.respond_to("error", "we can't unusbscribe if client is not subscribed", subscriber)
 
     def start(self):
@@ -68,12 +72,18 @@ class RelayServer:
         storage_loop.daemon = True
         storage_loop.start()
         notification_loop.start()
+        self.logger.debug(notification_loop)
+        self.logger.debug(storage_loop)
+        self.logger.info('Server started')
+        storage_loop.join()
         notification_loop.join()
 
     def _api_loop(self):
         while True:
             data, addr = self.sock.recvfrom(1024)
             data = json.loads(data.decode())
+            self.logger.info(f"{addr}, {data['type']}")
+            self.logger.debug(f"{addr}, {data}")
             if data["type"] == "get_state":
                 state = self.get_state()
                 self.respond_to("success", state, addr)
@@ -83,21 +93,25 @@ class RelayServer:
                     state = self.get_state()
                     self.respond_to("success", state, addr)
                 except ValueError as err:
+                    self.logger.error(str(err))
                     self.respond_to("error", str(err), addr)
             elif data["type"] == "subscribe":
                 self.subscribe(addr)
                 with self.lock:
-                    print(f"{addr} has subscribed")
+                    self.logger.info(f"{addr} has subscribed")
             elif data["type"] == "unsubscribe":
                 self.unsubscribe(addr)
                 with self.lock:
-                    print(f"{addr} has unsubscribed")
+                    self.logger.info(f"{addr} has unsubscribed")
             else:
                 self.respond_to("error", "Invalid request type", addr)
+                self.logger.warning(f"Invalid request type {addr}")
 
 if __name__ == "__main__":
+    server = None
     try:
-        server = RelayServer("0.0.0.0", 8000, 'filename.bson')
+        server = RelayServer("0.0.0.0", 8000, 'filename.bson', 'DEBUG')
         server.start()
     except KeyboardInterrupt:
-        print("Server stopped.")
+        server.logger.info("Server stopped.")
+        print("Shutting down...")

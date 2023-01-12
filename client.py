@@ -2,6 +2,7 @@ import json
 import socket
 import threading
 import _thread
+from logger import Logger
 
 class RelayClient:
     def __init__(self, host, port):
@@ -10,6 +11,8 @@ class RelayClient:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.settimeout(2)
         self.stop_event = threading.Event()
+        self.logger = Logger(__name__)
+        self.logger.add_file_handler('logs/client.log')
 
     def subscribe(self):
         self.sock.sendto(json.dumps({"type": "subscribe"}).encode(), (self.host, self.port))
@@ -76,9 +79,11 @@ class RelayClient:
                 print("Invalid choice.")
 
 if __name__ == "__main__":
+    client = None
     try:
         client = RelayClient("localhost", 8000)
         client.start()
 
     except KeyboardInterrupt:
-        print("Client stopped.")
+        client.logger.info('Client stopped.')
+        print("Client stopped..")
