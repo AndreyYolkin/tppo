@@ -3,7 +3,7 @@ import json
 import socket
 import threading
 import _thread
-from logger import Logger
+from src.logger import Logger
 
 class RelayClient:
     def __init__(self, host, port, log_level):

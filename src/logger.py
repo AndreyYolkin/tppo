@@ -9,7 +9,8 @@ class Logger:
         self.formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         
     def add_file_handler(self, filename):
-        working_directory = os.path.dirname(os.path.abspath(__file__))
+        working_directory = os.getcwd()
+        print(working_directory)
         file_path = os.path.join(working_directory, filename)
         folder = os.path.dirname(file_path)
         p = Path(folder)

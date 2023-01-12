@@ -5,7 +5,7 @@ import time
 
 class Storage:
     def __init__(self, filename, default_value):
-        working_directory = os.path.dirname(os.path.abspath(__file__))
+        working_directory = os.getcwd()
         self.file_path = os.path.join(working_directory, filename)
         self.default_value = default_value
         self.lock = threading.Lock()
