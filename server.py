@@ -28,16 +28,23 @@ class RelayServer:
         message = json.dumps(message).encode()
         self.sock.sendto(message, address)
 
-    def send_notification(self, notification_type, payload):
+    def send_notification(self, notification_type, payload, index=None):
         for subscriber in self.subscribers:
-            self.respond_to(notification_type, payload, subscriber)
+            if index:
+                if subscriber[1] == index:
+                    self.respond_to(notification_type, payload, subscriber[0])
+            else:
+                if subscriber[1] is None:
+                    self.respond_to(notification_type, payload, subscriber[0])
 
     # Getter/Setter of state
     def init_state(self, filename):
         self.relay_state = RelayState(6)
+        self.previous_state = self.relay_state.get_state()
         self.storage = Storage(filename, self.relay_state.get_state())
         try:
             self.relay_state.set_state(self.storage.get())
+            self.previous_state = self.relay_state.get_state()
         except ValueError:
             pass
 
@@ -57,15 +64,31 @@ class RelayServer:
 
     # Subscribers
 
-    def subscribe(self, subscriber):
-        self.subscribers.add(subscriber)
+    def subscribe(self, subscriber, index=None):
+        self.subscribers.add((subscriber, index))
         
-    def unsubscribe(self, subscriber):
+    def unsubscribe(self, subscriber, index=None):
         try:
-            self.subscribers.remove(subscriber)
+            new_subscribers = set()
+            for sub in self.subscribers:
+                if sub[0] != subscriber and (index is None or sub[1] != index):
+                    new_subscribers.add(sub)
+            self.subscribers = new_subscribers
         except KeyError:
             self.logger.warning(f"we can't unusbscribe if client is not subscribed {subscriber}")
             self.respond_to("error", "we can't unusbscribe if client is not subscribed", subscriber)
+
+    def _compare_and_notify(self, state):
+        if self.previous_state is None:
+            self.previous_state = self.relay_state.get_state()
+            return tuple(range(len(state)))
+        else:
+            changed_indices = []
+            for i in range(len(state)):
+                if state[i] != self.previous_state[i]:
+                    changed_indices.append(i)
+                    self.previous_state[i] = state[i]
+            return tuple(changed_indices)
 
     def start(self):
         notification_loop = threading.Thread(target=self._api_loop)

@@ -15,13 +15,27 @@ class RelayClient:
         self.logger = Logger(__name__, log_level)
         self.logger.add_file_handler('logs/client.log')
 
-    def subscribe(self):
-        self.sock.sendto(json.dumps({"type": "subscribe"}).encode(), (self.host, self.port))
-        print("Subscribed.")
+    def subscribe(self, index = None):
+        message = {"type": "subscribe"}
+        if index is not None:
+            message["index"] = index
+        self.sock.sendto(json.dumps(message).encode(), (self.host, self.port))
+        print("\033[96mSubscribed.\033[0m")
 
-    def unsubscribe(self):
-        self.sock.sendto(json.dumps({"type": "unsubscribe"}).encode(), (self.host, self.port))
-        print("Unsubscribed.")
+    def unsubscribe(self, index = None):
+        message = {"type": "unsubscribe"}
+        if index is not None:
+            message["index"] = index
+        self.sock.sendto(json.dumps(message).encode(), (self.host, self.port))
+        print("\033[96mUnsubscribed.\033[0m")
+
+    def indexed_subscribe(self):
+        index = input("Enter index: ")
+        self.subscribe(index)
+
+    def indexed_unsubscribe(self):
+        index = input("Enter index: ")
+        self.unsubscribe(index)
 
     def receive_notification(self):
         while not self.stop_event.is_set():
@@ -69,32 +83,38 @@ class RelayClient:
 
     def _main_loop(self):
         while not self.stop_event.is_set():
-            print("\033[95mWhat would you like to do?\033[0m")
-            print("1. Subscribe")
-            print("2. Unsubscribe")
-            print("3. Get state")
-            print("4. Get state (Indexed)")
-            print("5. Set state")
-            print("6. Set state (Indexed)")
-            print("7. Exit")
+            print("\033[95mWhat would you like to do? (Pick a number)\033[0m")
+            print("\033[94m1.\033[0m Subscribe")
+            print("\033[94m2.\033[0m Subscribe (Indexed)")
+            print("\033[94m3.\033[0m Unsubscribe")
+            print("\033[94m4.\033[0m Unsubscribe (Indexed)")
+            print("\033[94m5.\033[0m Get state")
+            print("\033[94m6.\033[0m Get state (Indexed)")
+            print("\033[94m7.\033[0m Set state")
+            print("\033[94m8.\033[0m Set state (Indexed)")
+            print("\033[94m9.\033[0m Exit")
             choice = input()
             if choice == "1":
                 self.subscribe()
             elif choice == "2":
-                self.unsubscribe()
+                self.indexed_subscribe()
             elif choice == "3":
-                self.get_state()
+                self.unsubscribe()
             elif choice == "4":
-                self.get_indexed_state()
+                self.indexed_unsubscribe()
             elif choice == "5":
-                self.set_state()
+                self.get_state()
             elif choice == "6":
-                self.set_indexed_state()
+                self.get_indexed_state()
             elif choice == "7":
+                self.set_state()
+            elif choice == "8":
+                self.set_indexed_state()
+            elif choice == "9":
                 self.stop()
                 _thread.interrupt_main()
-            else:
-                print("Invalid choice.")
+
+
 
 if __name__ == "__main__":
     client = None
