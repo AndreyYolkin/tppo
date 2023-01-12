@@ -4,11 +4,12 @@ class RelayState:
         self.state = ["off"] * self.num_switches
     
     def equal(self, other_state, index = None):
+        print(index)
         if index is not None:
-            return self.state[index] == other_state[index]
+            return self.state[index] == other_state
         return self.state == other_state
 
-    def get_state(self,index=None):
+    def get_state(self, index=None):
         if index is not None:
             return self.state[index]
         else:

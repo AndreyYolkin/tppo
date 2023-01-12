@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+  <script src="https://unpkg.com/vue-toasted"></script>
+</head>
+
+<body>
+  <div id="app">
+    <v-app>
+      <v-app-bar app color="primary">
+        <v-toolbar-title>Relay</v-toolbar-title>
+      </v-app-bar>
+      <v-main>
+        <v-container>
+          <v-row v-for="(relay, index) in relays" :key="index">
+            <v-col>
+              <v-switch v-model="relays[index]" inset true-value="on" false-value="off" :label="`Switch ${index}`" @change="updateState(index)"></v-switch>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-main>
+    </v-app>
+  </div>
+  <script>
+    Vue.use(Toasted)
+    new Vue({
+      el: "#app",
+      vuetify: new Vuetify(
+        {
+          theme: {
+            themes: {
+              light: {
+                primary: "#3f51b5",
+                secondary: "#b0bec5",
+                accent: "#8c9eff",
+                error: "#b71c1c"
+              }
+            }
+          }
+        }
+      ),
+      data() {
+        return {
+          relays: []
+        };
+      },
+      created() {
+        this.getState();
+      },
+      methods: {
+        invertState(index) {
+          this.relays[index] = this.relays[index] === "on" ? "off" : "on";
+        },
+        getState() {
+          axios
+            .get("/api/relay")
+            .then(response => {
+              this.relays = response.data.state;
+            })
+            .catch(error => {
+              console.log(error);
+            });
+        },
+        updateState(index) {
+          axios
+            .post(`/api/relay/${index}`, { state: this.relays[index] })
+            .then(response => {
+              this.$toasted.show('State succesfully updated', {
+                position: "bottom-center",
+                duration: 20000
+              });
+            })
+            .catch(error => {
+              console.log(error);
+              this.invertState(index);
+            });
+        }
+      }
+    });
+  </script>
+  <style>
+    .toasted.toasted-primary {
+      background-color: #3f51b5;
+      color: white;
+      font-family: Roboto, sans-serif;
+    }
+  </style>
+</body>
+
+</html>
