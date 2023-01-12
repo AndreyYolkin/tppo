@@ -5,7 +5,7 @@ from server import RelayServer
 app = Flask(__name__)
 
 # Create an instance of the relay server
-relay_server = RelayServer("127.0.0.1", 8002, "state.bson", "DEBUG")
+relay_server = RelayServer("127.0.0.1", 8002, "device.bson", "INFO")
 
 @app.route('/')
 def index():
