@@ -29,7 +29,7 @@ class RelayServer:
 
     # Getter/Setter of state
     def init_state(self, filename):
-        self.relay_state = RelayState(2)
+        self.relay_state = RelayState(6)
         self.storage = Storage(filename, self.relay_state.get_state())
         try:
             self.relay_state.set_state(self.storage.get())
