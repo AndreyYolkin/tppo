@@ -1,3 +1,4 @@
+import argparse
 import json
 import socket
 import threading
@@ -6,7 +7,7 @@ from storage import Storage
 from logger import Logger
 
 class RelayServer:
-    def __init__(self, host, port, filename, logging_level):
+    def __init__(self, host, port, filename, log_level):
         self.host = host
         self.port = port
         self.subscribers = set()
@@ -14,7 +15,7 @@ class RelayServer:
         self.sock.bind((self.host, self.port))
         self.lock = threading.Lock()
         self.init_state(filename)
-        self.logger = Logger(__name__, logging_level)
+        self.logger = Logger(__name__, log_level)
         self.logger.add_file_handler('logs/server.log')
 
     # Wrapper for response
@@ -109,8 +110,20 @@ class RelayServer:
 
 if __name__ == "__main__":
     server = None
+    parser = argparse.ArgumentParser(description="Relay server",
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("-H", "--host", default="0.0.0.0", help="IP address of the host")
+    parser.add_argument("-p", "--port", default=3000, type=int, help="Port number for the server")
+    parser.add_argument("-f", "--filename", default="device.bson", help="Filename for data storage (BSON)")
+    parser.add_argument("-l", "--log-level", default="INFO", help="Log level (DEBUG, INFO, WARNING, ERROR)")
+    args = parser.parse_args()
     try:
-        server = RelayServer("0.0.0.0", 8000, 'filename.bson', 'DEBUG')
+        server = RelayServer(args.host, args.port, args.filename, args.log_level)
+        print(f"Host: {args.host}")
+        print(f"Port: {args.port}")
+        print(f"Filename: {args.filename}")
+        print(f"Log level: {args.log_level}\n")
+        server.logger.debug(f"Host: {args.host}, Port: {args.port}, Filename: {args.filename}, Log level: {args.log_level}")
         server.start()
     except KeyboardInterrupt:
         server.logger.info("Server stopped.")

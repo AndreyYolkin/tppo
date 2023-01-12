@@ -1,3 +1,4 @@
+import argparse
 import json
 import socket
 import threading
@@ -5,13 +6,13 @@ import _thread
 from logger import Logger
 
 class RelayClient:
-    def __init__(self, host, port):
+    def __init__(self, host, port, log_level):
         self.host = host
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.settimeout(2)
         self.stop_event = threading.Event()
-        self.logger = Logger(__name__)
+        self.logger = Logger(__name__, log_level)
         self.logger.add_file_handler('logs/client.log')
 
     def subscribe(self):
@@ -80,8 +81,17 @@ class RelayClient:
 
 if __name__ == "__main__":
     client = None
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-H", "--host", default="0.0.0.0", help="IP address of the host")
+    parser.add_argument("-p", "--port", default=3000, type=int, help="Port number for the server")
+    parser.add_argument("-l", "--log-level", default="INFO", help="Log level (DEBUG, INFO, WARNING, ERROR)")
+    args = parser.parse_args()
     try:
-        client = RelayClient("localhost", 8000)
+        client = RelayClient(args.host, args.port, args.log_level)
+        print(f"Host: {args.host}")
+        print(f"Port: {args.port}")
+        print(f"Log level: {args.log_level}\n")
+        client.logger.debug(f"Host: {args.host}, Port: {args.port}, Log level: {args.log_level}")
         client.start()
 
     except KeyboardInterrupt:
