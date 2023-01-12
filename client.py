@@ -1,7 +1,6 @@
 import json
 import socket
 import threading
-import sys
 import _thread
 
 class RelayClient:
@@ -9,7 +8,7 @@ class RelayClient:
         self.host = host
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.settimeout(200)
+        self.sock.settimeout(2)
         self.stop_event = threading.Event()
 
     def subscribe(self):
@@ -27,7 +26,7 @@ class RelayClient:
                 message = json.loads(data.decode())
                 print(f"{message['type']}: {message['payload']}")
             except TimeoutError:
-                print('error')
+                pass
 
     def get_state(self, index=None):
         message = {"type": "get_state"}
@@ -52,7 +51,6 @@ class RelayClient:
         notification_loop.start()
         main_loop.join()
         notification_loop.join()
-        sys.exit(0)
 
     def _main_loop(self):
         while not self.stop_event.is_set():

@@ -3,14 +3,20 @@ class RelayState:
         self.num_switches = num_switches
         self.state = ["off"] * self.num_switches
     
+    def equal(self, other_state, index = None):
+        if index is not None:
+            return self.state[index] == other_state[index]
+        return self.state == other_state
+
     def get_state(self,index=None):
         if index is not None:
-            return {"state": self.state[index]}
+            return self.state[index]
         else:
-            return {"state": self.state}
+            return self.state
         
     def set_state(self, new_state, index=None):
-        print(new_state)
+        if (self.equal(new_state, index)):
+            raise ValueError("State is not changed")
         if index is not None:
             if new_state in ["on", "off"] and 0 <= index < self.num_switches:
                 self.state[index] = new_state
