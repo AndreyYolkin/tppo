@@ -87,11 +87,11 @@ class RelayServer:
             self.logger.info(f"{addr}, {data['type']}")
             self.logger.debug(f"{addr}, {data}")
             if data["type"] == "get_state":
-                state = self.get_state()
+                state = self.get_state(data.get("index", None))
                 self.respond_to("success", state, addr)
             elif data["type"] == "set_state":
                 try:
-                    self.save_state(data["state"])
+                    self.save_state(data.get("state"), data.get("index", None))
                     state = self.get_state()
                     self.respond_to("success", state, addr)
                 except ValueError as err:

@@ -28,8 +28,10 @@ class RelayClient:
             try:
                 data, _ = self.sock.recvfrom(1024)
                 message = json.loads(data.decode())
-                print(f"{message['type']}: {message['payload']}")
+                print(f"\033[96m{message['type']}: {message['payload']}\033[0m")
             except TimeoutError:
+                pass
+            except socket.error:
                 pass
 
     def get_state(self, index=None):
@@ -38,10 +40,19 @@ class RelayClient:
             message["index"] = index
         self.sock.sendto(json.dumps(message).encode(), (self.host, self.port))
 
+    def get_indexed_state(self):
+        index = input("Enter index: ")
+        self.get_state(index)
+
     def set_state(self):
         string_state = input("Enter new state in format on,off,on,off,on,on : ")
         new_state = [x.strip() for x in string_state.split(',')]
         self.sock.sendto(json.dumps({"type": "set_state", "state": new_state}).encode(), (self.host, self.port))
+
+    def set_indexed_state(self):
+        index = input("Enter index: ")
+        state = input("Enter new state: ")
+        self.sock.sendto(json.dumps({"type": "set_state", "index": index, "state": state}).encode(), (self.host, self.port))
 
     def stop(self):
         self.stop_event.set()
@@ -58,12 +69,14 @@ class RelayClient:
 
     def _main_loop(self):
         while not self.stop_event.is_set():
-            print("What would you like to do?")
+            print("\033[95mWhat would you like to do?\033[0m")
             print("1. Subscribe")
             print("2. Unsubscribe")
             print("3. Get state")
-            print("4. Set state")
-            print("5. Exit")
+            print("4. Get state (Indexed)")
+            print("5. Set state")
+            print("6. Set state (Indexed)")
+            print("7. Exit")
             choice = input()
             if choice == "1":
                 self.subscribe()
@@ -72,8 +85,12 @@ class RelayClient:
             elif choice == "3":
                 self.get_state()
             elif choice == "4":
-                self.set_state()
+                self.get_indexed_state()
             elif choice == "5":
+                self.set_state()
+            elif choice == "6":
+                self.set_indexed_state()
+            elif choice == "7":
                 self.stop()
                 _thread.interrupt_main()
             else:
