@@ -33,12 +33,12 @@ class Storage:
         with open(self.file_path, "wb") as f:
             f.write(bson.dumps(self._wrap(value)))
             
-    def _check_file_change(self, callback):
+    def check_file_change(self, callback):
         last_update_time = os.path.getmtime(self.file_path)
         while True:
             current_update_time = os.path.getmtime(self.file_path)
             if current_update_time != last_update_time:
                 last_update_time = current_update_time
                 with self.lock:
-                    time.sleep(0.1)
                     callback(self.get())
+            time.sleep(0.1)

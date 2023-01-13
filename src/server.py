@@ -4,6 +4,7 @@ import threading
 from src.state import RelayState
 from src.storage import Storage
 from src.logger import Logger
+import time
 
 class RelayServer:
     def __init__(self, host, port, filename, log_level):
@@ -98,11 +99,11 @@ class RelayServer:
 
     def start(self):
         notification_loop = threading.Thread(target=self._api_loop)
+        storage_loop = threading.Thread(target=self.storage.check_file_change, args=(self.set_state,))
         notification_loop.daemon = True
-        storage_loop = threading.Thread(target=self.storage._check_file_change, args=(self.set_state,))
         storage_loop.daemon = True
-        storage_loop.start()
         notification_loop.start()
+        storage_loop.start()
         self.logger.debug(notification_loop)
         self.logger.debug(storage_loop)
         self.logger.info('Server started')
@@ -138,3 +139,4 @@ class RelayServer:
             else:
                 self.respond_to("error", "Invalid request type", addr)
                 self.logger.warning(f"Invalid request type {addr}")
+            time.sleep(0.1)

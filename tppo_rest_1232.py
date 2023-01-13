@@ -1,11 +1,9 @@
 import argparse
 from flask import Flask, render_template, request, jsonify
 from src.server import RelayServer
+import threading
 
 app = Flask(__name__)
-
-# Create an instance of the relay server
-relay_server = RelayServer("127.0.0.1", 8002, "device.bson", "INFO")
 
 @app.route('/')
 def index():
@@ -46,7 +44,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(f'\033[95mOpen http://localhost:{args.port}/ in your browser to see UI\033[0m')
     try:
-      app.run(port=args.port)
+      loop = threading.Thread(target=app.run, kwargs={ "port": args.port, })
+      loop.daemon = True
+      loop.start()
+      relay_server = RelayServer("0.0.0.0", 3000, "device.bson", "INFO")
       relay_server.start()
     except KeyboardInterrupt:
         print("Shutting down...")

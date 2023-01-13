@@ -10,7 +10,6 @@ class Logger:
         
     def add_file_handler(self, filename):
         working_directory = os.getcwd()
-        print(working_directory)
         file_path = os.path.join(working_directory, filename)
         folder = os.path.dirname(file_path)
         p = Path(folder)
