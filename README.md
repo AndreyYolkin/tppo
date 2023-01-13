@@ -31,7 +31,7 @@ The server can be started by running the `tppo_server_1232.py` file. It takes th
 To start the server, you can run the following command:
 
 ```bash
-python tppo_server_1232.py --host=127.0.0.1 --port=8002 --filename=device.bson --log_level=INFO
+python3 tppo_server_1232.py --host=127.0.0.1 --port=8002 --filename=device.bson --log_level=INFO
 ```
 
 Client
@@ -45,7 +45,7 @@ The client allows you to interact with the relay server by sending commands to i
 
 To start the client, you can run the following command:
 ```bash
-python tppo_client_1232.py --host=127.0.0.1 --port=8002 --log_level=INFO
+python3 tppo_client_1232.py --host=127.0.0.1 --port=8002 --log_level=INFO
 ```
 
 API
@@ -78,5 +78,5 @@ Also, Flask has UI page, where you can see and change the state of relay, availa
 
 To start the flask, you can run the following command:
 ```bash
-python tppo_rest_1232.py --port=5000
+python3 tppo_rest_1232.py --port=5000
 ```
