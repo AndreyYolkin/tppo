@@ -1,6 +1,6 @@
 import argparse
 from flask import Flask, render_template, request, jsonify
-from server import RelayServer
+from src.server import RelayServer
 
 app = Flask(__name__)
 

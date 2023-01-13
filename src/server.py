@@ -1,4 +1,3 @@
-import argparse
 import json
 import socket
 import threading
@@ -52,28 +51,35 @@ class RelayServer:
         return self.relay_state.get_state(index)
 
     def set_state(self, state):
+        changed_indices = self._compare_and_notify(state)
         try:
             self.relay_state.set_state(state)
-            self.send_notification('state_changed', self.get_state())
         except ValueError:
-            self.send_notification('state_changed', self.get_state())
+            pass
+
+        if len(changed_indices) > 0:
+            for idx in changed_indices:
+                self.send_notification('state_changed', self.get_state(idx), idx)
+            self.send_notification('state_changed', self.get_state(), None)
     
     def save_state(self, state, index=None):
-        self.relay_state.set_state(state, index)
-        self.storage.set(self.get_state())
+        p = self.relay_state.imagine_state(state, index)
+        self.storage.set(p)
+        return p
 
     # Subscribers
 
     def subscribe(self, subscriber, index=None):
-        self.subscribers.add((subscriber, index))
+        self.subscribers.add((subscriber, int (index) if index else None))
         
     def unsubscribe(self, subscriber, index=None):
         try:
-            new_subscribers = set()
+            new_subscribers = set(self.subscribers)
             for sub in self.subscribers:
-                if sub[0] != subscriber and (index is None or sub[1] != index):
-                    new_subscribers.add(sub)
+                if sub[0] == subscriber and sub[1] == (int (index) if index else None):
+                    new_subscribers.remove(sub)
             self.subscribers = new_subscribers
+        
         except KeyError:
             self.logger.warning(f"we can't unusbscribe if client is not subscribed {subscriber}")
             self.respond_to("error", "we can't unusbscribe if client is not subscribed", subscriber)
@@ -81,14 +87,14 @@ class RelayServer:
     def _compare_and_notify(self, state):
         if self.previous_state is None:
             self.previous_state = self.relay_state.get_state()
-            return tuple(range(len(state)))
+            return range(len(state))
         else:
             changed_indices = []
             for i in range(len(state)):
                 if state[i] != self.previous_state[i]:
                     changed_indices.append(i)
                     self.previous_state[i] = state[i]
-            return tuple(changed_indices)
+            return changed_indices
 
     def start(self):
         notification_loop = threading.Thread(target=self._api_loop)
@@ -114,8 +120,7 @@ class RelayServer:
                 self.respond_to("success", state, addr)
             elif data["type"] == "set_state":
                 try:
-                    self.save_state(data.get("state"), data.get("index", None))
-                    state = self.get_state()
+                    state = self.save_state(data.get("state"), data.get("index", None))
                     self.respond_to("success", state, addr)
                 except ValueError as err:
                     self.logger.error(str(err))
@@ -133,24 +138,3 @@ class RelayServer:
             else:
                 self.respond_to("error", "Invalid request type", addr)
                 self.logger.warning(f"Invalid request type {addr}")
-
-if __name__ == "__main__":
-    server = None
-    parser = argparse.ArgumentParser(description="Relay server",
-                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-H", "--host", default="0.0.0.0", help="IP address of the host")
-    parser.add_argument("-p", "--port", default=3000, type=int, help="Port number for the server")
-    parser.add_argument("-f", "--filename", default="device.bson", help="Filename for data storage (BSON)")
-    parser.add_argument("-l", "--log-level", default="INFO", help="Log level (DEBUG, INFO, WARNING, ERROR)")
-    args = parser.parse_args()
-    try:
-        server = RelayServer(args.host, args.port, args.filename, args.log_level)
-        print(f"Host: {args.host}")
-        print(f"Port: {args.port}")
-        print(f"Filename: {args.filename}")
-        print(f"Log level: {args.log_level}\n")
-        server.logger.debug(f"Host: {args.host}, Port: {args.port}, Filename: {args.filename}, Log level: {args.log_level}")
-        server.start()
-    except KeyboardInterrupt:
-        server.logger.info("Server stopped.")
-        print("Shutting down...")

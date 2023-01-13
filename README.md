@@ -21,7 +21,7 @@ pip install -r requirements.txt
 Server
 ------
 
-The server can be started by running the `server.py` file. It takes the following arguments:
+The server can be started by running the `tppo_server_1232.py` file. It takes the following arguments:
 
 *   `host`: The host IP address to bind the server to. Defaults to `127.0.0.1`.
 *   `port`: The port number to bind the server to. Defaults to `8002`.
@@ -31,13 +31,13 @@ The server can be started by running the `server.py` file. It takes the followin
 To start the server, you can run the following command:
 
 ```bash
-python server.py --host=127.0.0.1 --port=8002 --filename=device.bson --log_level=INFO
+python tppo_server_1232.py --host=127.0.0.1 --port=8002 --filename=device.bson --log_level=INFO
 ```
 
 Client
 ------
 
-The client allows you to interact with the relay server by sending commands to it and receiving notifications from it. It can be started by running the `client.py` file. It takes the following arguments:
+The client allows you to interact with the relay server by sending commands to it and receiving notifications from it. It can be started by running the `tppo_client_1232.py` file. It takes the following arguments:
 
 *   `host`: The host IP address of the server. Defaults to `127.0.0.1`.
 *   `port`: The port number of the server. Defaults to `8002`.
@@ -45,7 +45,7 @@ The client allows you to interact with the relay server by sending commands to i
 
 To start the client, you can run the following command:
 ```bash
-python client.py --host=127.0.0.1 --port=8002 --log_level=INFO
+python tppo_client_1232.py --host=127.0.0.1 --port=8002 --log_level=INFO
 ```
 
 API
@@ -75,3 +75,8 @@ The relay server also provides a REST API that can be used to get and set the st
     *   Outputs: JSON object with the same format as the `GET /api/relay/<int:index>` endpoint.
 
 Also, Flask has UI page, where you can see and change the state of relay, available at `/` of Flask instance.
+
+To start the flask, you can run the following command:
+```bash
+python tppo_rest_1232.py --port=5000
+```
