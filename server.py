@@ -121,11 +121,13 @@ class RelayServer:
                     self.logger.error(str(err))
                     self.respond_to("error", str(err), addr)
             elif data["type"] == "subscribe":
-                self.subscribe(addr)
+                self.subscribe(addr, data.get('index', None))
+                self.respond_to("success", "subscribed", addr)
                 with self.lock:
                     self.logger.info(f"{addr} has subscribed")
             elif data["type"] == "unsubscribe":
-                self.unsubscribe(addr)
+                self.unsubscribe(addr, data.get('index', None))
+                self.respond_to("success", "unsubscribed", addr)
                 with self.lock:
                     self.logger.info(f"{addr} has unsubscribed")
             else:

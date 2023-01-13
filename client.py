@@ -20,14 +20,12 @@ class RelayClient:
         if index is not None:
             message["index"] = index
         self.sock.sendto(json.dumps(message).encode(), (self.host, self.port))
-        print("\033[96mSubscribed.\033[0m")
 
     def unsubscribe(self, index = None):
         message = {"type": "unsubscribe"}
         if index is not None:
             message["index"] = index
         self.sock.sendto(json.dumps(message).encode(), (self.host, self.port))
-        print("\033[96mUnsubscribed.\033[0m")
 
     def indexed_subscribe(self):
         index = input("Enter index: ")
