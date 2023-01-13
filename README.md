@@ -23,15 +23,15 @@ Server
 
 The server can be started by running the `tppo_server_1232.py` file. It takes the following arguments:
 
-*   `host`: The host IP address to bind the server to. Defaults to `127.0.0.1`.
-*   `port`: The port number to bind the server to. Defaults to `8002`.
+*   `host`: The host IP address to bind the server to. Defaults to `0.0.0.0`.
+*   `port`: The port number to bind the server to. Defaults to `3000`.
 *   `filename`: The filename of the storage file. Defaults to `device.bson`.
 *   `log_level`: The log level for the server. Defaults to `INFO`.
 
 To start the server, you can run the following command:
 
 ```bash
-python3 tppo_server_1232.py --host=127.0.0.1 --port=8002 --filename=device.bson --log_level=INFO
+python3 tppo_server_1232.py --host=127.0.0.1 --port=8000 --filename=device.bson --log_level=INFO
 ```
 
 Client
@@ -39,13 +39,13 @@ Client
 
 The client allows you to interact with the relay server by sending commands to it and receiving notifications from it. It can be started by running the `tppo_client_1232.py` file. It takes the following arguments:
 
-*   `host`: The host IP address of the server. Defaults to `127.0.0.1`.
-*   `port`: The port number of the server. Defaults to `8002`.
+*   `host`: The host IP address of the server. Defaults to `0.0.0.0`.
+*   `port`: The port number of the server. Defaults to `3000`.
 *   `log_level`: The log level for the client. Defaults to `INFO`.
 
 To start the client, you can run the following command:
 ```bash
-python3 tppo_client_1232.py --host=127.0.0.1 --port=8002 --log_level=INFO
+python3 tppo_client_1232.py --host=127.0.0.1 --port=8000 --log_level=INFO
 ```
 
 API
