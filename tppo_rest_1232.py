@@ -42,7 +42,9 @@ if __name__ == '__main__':
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-p", "--port", default=5000, type=int, help="Port number for the server")
     args = parser.parse_args()
+    print(f'\033[95m------------------------------------------------------------\033[0m')
     print(f'\033[95mOpen http://localhost:{args.port}/ in your browser to see UI\033[0m')
+    print(f'\033[95m------------------------------------------------------------\033[0m')
     try:
       loop = threading.Thread(target=app.run, kwargs={ "port": args.port, })
       loop.daemon = True
